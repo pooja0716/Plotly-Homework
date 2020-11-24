@@ -1,4 +1,4 @@
-// Use D3 library to read samples.json file
+// 1. Use D3 library to read in samples.json file
 
 function init() {
     d3.json("samples.json").then((data) => {
@@ -13,15 +13,16 @@ function init() {
                            .text(name);
         })
 
-        // Now create a Horizontal bar chart
+        //2.  Now create a Horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+        // Use sample_values as the values for the bar chart.
 
         var values = data.samples[0].sample_values;
 
-        // use otu_ids as a label for this chart
+        // Use otu_ids as a labels for this chart
 
         var labels = data.samples[0].otu_ids;
 
-        // use otu_labels as the hovertext
+        // Use otu_labels as the hovertext for the chart
 
         var hovertext = data.samples[0].otu_labels;
 
@@ -51,7 +52,7 @@ function init() {
 
         Plotly.newPlot("bar", barchartData, layout);
 
-        // create a bubble chart
+        // 3. create a bubble chart that doisplays each sample.
 
         var trace2 = {
             x: labels,
@@ -59,14 +60,19 @@ function init() {
             text: hovertext,
             mode: "markers",
 
+            
             marker: {
+
+                // Use sample_values for the marker size
                 size: values,
+
+                // Use otu_ids for the marker colors
                 color: labels,
             }
         }
 
         var BubbleData = [trace2];
-
+        
         var layoutBubble = {
             xaxis: {title: "OTU ID"},
         }
@@ -86,14 +92,21 @@ function init() {
 }
 
 // Update plots and metadata 
+// 6. Update all of the plots any time that a new sample is selected.
 
 function optionChanged(selectValue) {
     d3.json("samples.json").then((data) => {
 
         var samples = data.samples;
         var newSample = samples.filter(sample => sample.id === selectValue);
+        
+        // Use sample_values for the y values
         var values = newSample[0].sample_values;
+
+        // Use otu_ids for the x values
         var labels = newSample[0].otu_ids;
+
+       // Use otu_labels for the text values 
         var hovertext = newSample[0].otu_labels;
         var top_10Values = values.slice(0,10).reverse();
         var top_10Labels = labels.slice(0,10).reverse();
@@ -115,11 +128,16 @@ function optionChanged(selectValue) {
         Plotly.restyle("bubble", "text", [hovertext]);
         Plotly.restyle("bubble", "color", [labels]);
 
+
+       // 4. Display the sample metadata, i.e, an individual's demographic information.
         var sampleMetadata = d3.select("#sample-metadata");
         sampleMetadata.html("");
+ 
         var Demographics = data.metadata;
         var newMetaData = Demographics.filter(sample => sample.id === parseInt(selectValue));
 
+
+       // 5. Display each key-value pair from the metadata JSON object somewhere on the page.
         Object.entries(newMetaData[0]).forEach(([key, value]) => {
             sampleMetadata.append("p").text(`${key}: ${value}`);
         })
